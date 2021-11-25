@@ -1,8 +1,7 @@
 
-# 
-# library(renv)
-# 
-# renv::init() 
+
+library(renv)
+renv::restore()
 
 #Other packages####
 
@@ -10,6 +9,7 @@
 library(dplyr)
 library(readr)
 library(tidyr)
+library(tibble)
 
 #Model assessment
 library(caret)
@@ -18,7 +18,6 @@ library(pROC)
 #For decision trees
 library(rpart)
 library(rpart.plot) #Not essential; I just wanted to see the plot
-library(e1071) #Supports rpart... it said I needed it
 
 #For random forest
 library(ranger)
@@ -34,7 +33,7 @@ library(lightgbm)
 bird_data <- read_csv("ML Project/Max Count of Birds by Point.csv")
 hab_data <- read_csv("ML Project/Final Habitat Bird Points.csv")
 
-#Need to do some light processing; only want 2019 Acadian Flycatchers detection/
+#Need to do some light processing; only want 2019 Acadian Flycatcher detections/
 #no detection and 2019 habitat
 ACFL_data <-
 bird_data %>%
@@ -487,6 +486,7 @@ tibble(x = lgb_roc
 #Convert test data to matrix
 xtest <- as.matrix(testing[setdiff(names(testing), "ACFL_detect")])
 
+#Results table ####
 list(list(dtree_cmat,"Decision Tree"),
       list(rf_cmat,"Random Forest"),
      list(lgb_cmat,"LightGBM"))%>%
@@ -509,17 +509,5 @@ lapply(\(x){
   
 str(dtree_cmat)
 
-library(tibble)
-dtree_cmat$overall%>%
-  enframe()
 
-plot(roc(
-  testing$ACFL_detect,
-  predict(tuned_lgb, xtest)
-))
 
-dtree_cmat$byClass["Sensitivity"]
-
-dtree_roc
-rf_roc
-lgb_roc
