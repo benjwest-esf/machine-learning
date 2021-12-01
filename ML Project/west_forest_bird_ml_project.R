@@ -1,5 +1,4 @@
 
-
 library(renv)
 renv::restore()
 
@@ -14,6 +13,7 @@ library(tibble)
 #Model assessment
 library(caret)
 library(pROC)
+library(e1071) #needed for confusion matrix
 
 #For decision trees
 library(rpart)
@@ -140,7 +140,6 @@ for (i in seq_len(nrow(tuning_grid))) {
 tuning_grid%>%
   arrange(loss)
 
-
 decision_tree <- rpart(ACFL_detect ~ ., data = resampled_training,
                        control = list(minbucket = 31))
 
@@ -266,7 +265,6 @@ caret::confusionMatrix(
   positive = "Yes"
 )
 #Fits training set perfectly!
-
 
 #Confusion matrix for testing data
 (rf_cmat <- caret::confusionMatrix(
@@ -479,14 +477,14 @@ lgb_predictions <- predict(tuned_lgb, xtest)%>%
       predict(tuned_lgb, xtest)
     )%>%
     auc())
-tibble(x = lgb_roc
-       )
+
 ########################
 
 #Convert test data to matrix
 xtest <- as.matrix(testing[setdiff(names(testing), "ACFL_detect")])
 
 #Results table ####
+results_table <-
 list(list(dtree_cmat,"Decision Tree"),
       list(rf_cmat,"Random Forest"),
      list(lgb_cmat,"LightGBM"))%>%
@@ -504,10 +502,9 @@ lapply(\(x){
                  as.numeric(lgb_roc)
                    ))%>%
   mutate(across(where(is.numeric), round, 3))%>%
-  arrange(desc(AUC))%>%
-  dplyr::select(`Model Type`, AUC, everything())
+  arrange(desc(Accuracy))#%>%
+  #dplyr::select(`Model Type`, AUC, everything())
   
-str(dtree_cmat)
-
+write_csv(results_table,"ACFL_ML_results.csv")
 
 
